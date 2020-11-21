@@ -1,0 +1,12 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "VG_Engine.exe (Source\\Engine\\VG_Engine.exe)",
+      "name": "VG_Engine.exe (Source\\Engine\\VG_Engine.exe)"
+    }
+  ]
+}
