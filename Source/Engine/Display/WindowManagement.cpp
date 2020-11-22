@@ -65,3 +65,7 @@ bool VG::Window::shouldClose() const {
 
     return glfwWindowShouldClose((GLFWwindow*)window);
 }
+
+bool VG::QueueFamilyIndices::isComplete() const {
+    return graphicsFamily.has_value();
+}

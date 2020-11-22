@@ -34,6 +34,7 @@
 
 #pragma once
 #include "../Win32Exports.hpp"
+#include <optional>
 
 
 namespace VG {
@@ -41,6 +42,12 @@ namespace VG {
     extern bool enableValidationLayers;
 
     extern std::vector<const char*> validationLayers;
+
+    struct QueueFamilyIndices{
+        std::optional<uint32_t> graphicsFamily;
+
+        bool isComplete() const;
+    };
 
     /**
      * Represents a window object
@@ -72,6 +79,7 @@ namespace VG {
 	private:
 	    VkInstance instance;
         VkDebugUtilsMessengerEXT debugMessenger;
+        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
         /**
 	     * Creates a VkInstance
@@ -88,7 +96,13 @@ namespace VG {
 	     */
 	    void setupDebugMessenger();
 
+	    /**
+	     * Populates the create info of a debug callback
+	     * @param createInfo The create info to populate
+	     */
 	    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+
+	    void pickPhysicalDevice();
 
 	    /**
 	     * Checks to make sure validation layers are supported
@@ -115,7 +129,11 @@ namespace VG {
                 const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                 void* pUserData);
 
-	public:
+        static int rateDeviceSuitability(VkPhysicalDevice device);
+        static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+        static bool isDeviceSuitable(VkPhysicalDevice device);
+
+    public:
 	    GraphicsInstance() = default;
 	    ~GraphicsInstance();
 

@@ -33,7 +33,9 @@
 ************************************************************************************/
 
 #include <sstream>
+#include <map>
 #include "../DisplaysAPI.hpp"
+#include <optional>
 
 namespace VG{
 
@@ -117,8 +119,6 @@ namespace VG{
         /* Create the instance */
         VULKAN_CALL(vkCreateInstance(&createInfo, nullptr, &instance));
 
-        setupDebugMessenger();
-
     }
 
     void GraphicsInstance::setupDebugMessenger() {
@@ -142,6 +142,53 @@ namespace VG{
         createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
         createInfo.pfnUserCallback = debugCallback;
+
+    }
+
+    void GraphicsInstance::pickPhysicalDevice() {
+
+        VG_CORE_INFO_NOSTRIP("Finding number of suitable GPUs with Vulkan.");
+
+        uint32_t deviceCount = 0;
+        vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+
+        VG_CORE_INFO_NOSTRIP("Found {} GPU that supports Vulkan.", deviceCount);
+
+        if(deviceCount == 0){
+            VG_CORE_CRITICAL_NOSTRIP("No suitable GPU for Vulkan Rendering!");
+            throw std::runtime_error("Failed to find GPU with Vulkan Support!");
+        }
+
+        /* Rate suitability of all devices */
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+        std::multimap<int, VkPhysicalDevice> candidates;
+
+        for (const auto& device : devices) {
+            int score = rateDeviceSuitability(device);
+            candidates.insert(std::make_pair(score,device));
+        }
+
+        /* Find most suitable GPU */
+        if(candidates.rbegin()->first > 0){
+            physicalDevice = candidates.rbegin()->second;
+        }else{
+            goto VG_VK_NO_GPU;
+        }
+
+        if(physicalDevice == VK_NULL_HANDLE){
+
+            VG_VK_NO_GPU:
+            VG_CORE_CRITICAL_NOSTRIP("Failed to find a suitable GPU, but a GPU was found.");
+            throw std::runtime_error("Filed to find a suitable GPU, but a GPU was found");
+
+        }
+
+        {
+            VkPhysicalDeviceProperties deviceProperties;
+            vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
+            VG_CORE_INFO_NOSTRIP("Selected {} as the GPU", deviceProperties.deviceName);
+        }
 
     }
 
@@ -198,6 +245,69 @@ namespace VG{
         return VK_FALSE;
     }
 
+    QueueFamilyIndices GraphicsInstance::findQueueFamilies(VkPhysicalDevice device) {
+
+        struct QueueFamilyIndices indices;
+
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+        VG_CORE_INFO_NOSTRIP("Querying Queue Families. {} found.", queueFamilyCount);
+
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+        int i = 0;
+        for (const auto& queueFamily : queueFamilies) {
+            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                indices.graphicsFamily = i;
+            }
+
+            if(indices.isComplete()){
+                break;
+            }
+
+            i++;
+        }
+
+        return indices;
+    }
+
+    int GraphicsInstance::rateDeviceSuitability(VkPhysicalDevice device) {
+
+        /* Ask driver for properties */
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+        /* Ask driver for features */
+        VkPhysicalDeviceFeatures deviceFeatures;
+        vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+        int score = 0;
+
+        /* Discrete GPUs have a significant performance advantage */
+        if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+            score += 1000;
+        }
+
+        /* Maximum possible size of textures affects graphics quality */
+        score += deviceProperties.limits.maxImageDimension2D;
+
+        /* Application can't function without geometry shaders */
+        if (!deviceFeatures.geometryShader) {
+            return 0;
+        }
+
+        return score;
+
+    }
+
+    bool GraphicsInstance::isDeviceSuitable(VkPhysicalDevice device) {
+        if(!findQueueFamilies(device).isComplete()){
+            VG_CORE_CRITICAL_NOSTRIP("Could not find queues");
+            return false;
+        }
+        return true;
+    }
 
     VG::GraphicsInstance::~GraphicsInstance() {
 
@@ -212,9 +322,10 @@ namespace VG{
                                       uint32_t appVersion_minor, uint32_t appVersion_patch) {
 
         createInstance(applicationName, appVersion_major, appVersion_minor, appVersion_patch);
+        setupDebugMessenger();
+        pickPhysicalDevice();
 
     }
-
 
 
 }
