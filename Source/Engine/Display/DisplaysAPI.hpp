@@ -67,31 +67,17 @@ namespace VG {
 	};
 
 	class VG_API GraphicsInstance{
-
 	private:
 	    VkInstance instance;
-	    VkDebugUtilsMessengerEXT debugMessenger;
-        std::vector<const char*> validationLayers;
+	    void createInstance(const std::string &applicationName, uint32_t appVersion_major,
+                            uint32_t appVersion_minor, uint32_t appVersion_patch);
 
-    public:
-        /**
-         * Creates a vulkan application instance.
-         * \note must be deleted before the engine is terminated
-         * @param applicationName The name of the app
-         * @param appVersion_major The major version
-         * @param appVersion_minor The minor version
-         * @param appVersion_patch The patch version
-         */
-        GraphicsInstance(const std::string& applicationName, uint32_t appVersion_major, uint32_t appVersion_minor, uint32_t appVersion_patch, std::vector<const char*> validationLayers = {});
+	public:
+	    GraphicsInstance() = default;
 	    ~GraphicsInstance();
 
-	    void setupDebugMessanger();
 
-	    void addValidationLayer(const char *);
-	    static std::vector<const char*> getRequiredExtensions();
-
-	    bool checkValidationLayerSupport() const;
-
+	    void initVulkan(const std::string& applicationName, uint32_t appVersion_major, uint32_t appVersion_minor, uint32_t appVersion_patch);
     };
 
 }
