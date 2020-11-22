@@ -36,6 +36,7 @@
 #include <map>
 #include "../DisplaysAPI.hpp"
 #include <optional>
+#include <set>
 
 namespace VG{
 
@@ -48,6 +49,10 @@ namespace VG{
 #else
     bool enableValidationLayers = true;
 #endif
+
+    bool VG::QueueFamilyIndices::isComplete() const {
+        return graphicsFamily.has_value() && presentFamily.has_value();
+    }
 
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
         auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
@@ -196,14 +201,20 @@ namespace VG{
 
         /* Create a queue family from the required indices */
         QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-        float queuePriority = 1.0f;
 
-        /* mention the queues we need */
-        VkDeviceQueueCreateInfo queueCreateInfo{};
-        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-        queueCreateInfo.queueCount = 1;
-        queueCreateInfo.pQueuePriorities = &queuePriority;
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        std::set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+
+        /* Create queue families */
+        float queuePriority = 1.0f;
+        for (uint32_t queueFamily : uniqueQueueFamilies) {
+            VkDeviceQueueCreateInfo queueCreateInfo{};
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = queueFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
 
         /* mention the features we need */
         VkPhysicalDeviceFeatures deviceFeatures{};
@@ -211,8 +222,8 @@ namespace VG{
         /* Actually create the logical device */
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.pQueueCreateInfos = &queueCreateInfo;
-        createInfo.queueCreateInfoCount = 1;
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 
         createInfo.pEnabledFeatures = &deviceFeatures;
 
@@ -230,6 +241,18 @@ namespace VG{
 
         /* and lastly create the graphics queue */
         vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+        vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+
+    }
+
+    void GraphicsInstance::createSurface(Window *window) {
+
+        if(glfwCreateWindowSurface(instance, window->getPtr(), nullptr, &surface) != VK_SUCCESS){
+
+            VG_CORE_CRITICAL_NOSTRIP("Unable to init vulkan surface on the window.")
+            throw std::runtime_error("Failed to create window surface");
+
+        }
 
     }
 
@@ -303,6 +326,13 @@ namespace VG{
                 indices.graphicsFamily = i;
             }
 
+            VkBool32 presentSupport = false;
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+            if(presentSupport){
+                indices.presentFamily = i;
+            }
+
+
             if(indices.isComplete()){
                 break;
             }
@@ -359,20 +389,23 @@ namespace VG{
         if(enableValidationLayers){
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
         }
+
+        vkDestroySurfaceKHR(instance, surface, nullptr);
+
         vkDestroyInstance(instance, nullptr);
 
     }
 
     void GraphicsInstance::initVulkan(const std::string &applicationName, uint32_t appVersion_major,
-                                      uint32_t appVersion_minor, uint32_t appVersion_patch) {
+                                      uint32_t appVersion_minor, uint32_t appVersion_patch, Window* window) {
 
         createInstance(applicationName, appVersion_major, appVersion_minor, appVersion_patch);
         setupDebugMessenger();
+        createSurface(window);
         pickPhysicalDevice();
         createLogicalDevice();
 
     }
-
 
 
 

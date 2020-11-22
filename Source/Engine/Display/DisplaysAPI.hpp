@@ -45,6 +45,7 @@ namespace VG {
 
     struct QueueFamilyIndices{
         std::optional<uint32_t> graphicsFamily;
+        std::optional<uint32_t> presentFamily;
 
         bool isComplete() const;
     };
@@ -67,6 +68,12 @@ namespace VG {
 		~Window();
 
 		/**
+		 * Gets the window pointer
+		 * @return The window pointer
+		 */
+		inline GLFWwindow* getPtr(){return (GLFWwindow*)window; }
+
+		/**
 		 * Asks the driver if the window should close for any reason.
 		 * \note Also polls for updates
 		 * @return Whether the window should close.
@@ -82,6 +89,8 @@ namespace VG {
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDevice device;
         VkQueue graphicsQueue;
+        VkQueue presentQueue;
+        VkSurfaceKHR surface;
 
         /**
 	     * Creates a VkInstance
@@ -104,9 +113,21 @@ namespace VG {
 	     */
 	    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 
+	    /**
+	     * Picks a physical device to render to.
+	     */
 	    void pickPhysicalDevice();
 
+	    /**
+	     * Creates a logical device from the physical device handle in this class
+	     */
 	    void createLogicalDevice();
+
+	    /**
+	     * Creates a surface on the window
+	     * @param window
+	     */
+	    void createSurface(Window* window);
 
 	    /**
 	     * Checks to make sure validation layers are supported
@@ -134,15 +155,15 @@ namespace VG {
                 void* pUserData);
 
         static int rateDeviceSuitability(VkPhysicalDevice device);
-        static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-        static bool isDeviceSuitable(VkPhysicalDevice device);
+        QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+        bool isDeviceSuitable(VkPhysicalDevice device);
 
     public:
 	    GraphicsInstance() = default;
 	    ~GraphicsInstance();
 
 
-	    void initVulkan(const std::string& applicationName, uint32_t appVersion_major, uint32_t appVersion_minor, uint32_t appVersion_patch);
+	    void initVulkan(const std::string& applicationName, uint32_t appVersion_major, uint32_t appVersion_minor, uint32_t appVersion_patch, Window* window);
     };
 
 }
