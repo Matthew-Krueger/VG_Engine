@@ -40,6 +40,8 @@ namespace VG {
 
     extern bool enableValidationLayers;
 
+    extern std::vector<const char*> validationLayers;
+
     /**
      * Represents a window object
      */
@@ -71,6 +73,7 @@ namespace VG {
 	    VkInstance instance;
 	    void createInstance(const std::string &applicationName, uint32_t appVersion_major,
                             uint32_t appVersion_minor, uint32_t appVersion_patch);
+        static bool checkValidationLayerSupport();
 
 	public:
 	    GraphicsInstance() = default;

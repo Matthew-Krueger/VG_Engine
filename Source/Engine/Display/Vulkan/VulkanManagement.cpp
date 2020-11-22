@@ -37,9 +37,24 @@
 
 namespace VG{
 
+    std::vector<const char*> validationLayers = {
+            "VK_LAYER_KHRONOS_validation"
+    };
+
+#ifdef NDEBUG
+    bool enableValidationLayers = false;
+#else
+    bool enableValidationLayers = true;
+#endif
+
     void GraphicsInstance::createInstance(const std::string &applicationName, uint32_t appVersion_major,
                                           uint32_t appVersion_minor, uint32_t appVersion_patch) {
 
+
+        /* Make sure validation layers are available */
+        if (enableValidationLayers && !checkValidationLayerSupport()) {
+            throw std::runtime_error("validation layers requested, but not available!");
+        }
 
         /* Create information about our application */
         VG_CORE_INFO_NOSTRIP("Creating new Vulkan Application Info for Application: {} - V{}.{}.{}\n\twith Engine {} - V{}.{}.{} using Vulkan API: V{}",
@@ -58,6 +73,14 @@ namespace VG{
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
 
+        /* let vulkan decide if validation layers should be enabled */
+        if (enableValidationLayers) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+            createInfo.ppEnabledLayerNames = validationLayers.data();
+        } else {
+            createInfo.enabledLayerCount = 0;
+        }
+
         /* let GLFW handle extensions */
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions;
@@ -67,13 +90,37 @@ namespace VG{
         createInfo.enabledExtensionCount = glfwExtensionCount;
         createInfo.ppEnabledExtensionNames = glfwExtensions;
 
-        /* disable layers */
-        createInfo.enabledLayerCount = 0;
-
         /* Create the instance */
         VULKAN_CALL(vkCreateInstance(&createInfo, nullptr, &instance));
 
     }
+
+    bool GraphicsInstance::checkValidationLayerSupport() {
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+        std::vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+        for (const char* layerName : validationLayers) {
+            bool layerFound = false;
+
+            for (const auto& layerProperties : availableLayers) {
+                if (strcmp(layerName, layerProperties.layerName) == 0) {
+                    layerFound = true;
+                    break;
+                }
+            }
+
+            if (!layerFound) {
+                return false;
+            }
+        }
+
+        return true;
+
+    }
+
 
     VG::GraphicsInstance::~GraphicsInstance() {
 
@@ -87,6 +134,7 @@ namespace VG{
         createInstance(applicationName, appVersion_major, appVersion_minor, appVersion_patch);
 
     }
+
 
 
 }
