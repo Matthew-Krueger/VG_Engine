@@ -80,6 +80,8 @@ namespace VG {
 	    VkInstance instance;
         VkDebugUtilsMessengerEXT debugMessenger;
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+        VkDevice device;
+        VkQueue graphicsQueue;
 
         /**
 	     * Creates a VkInstance
@@ -103,6 +105,8 @@ namespace VG {
 	    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 
 	    void pickPhysicalDevice();
+
+	    void createLogicalDevice();
 
 	    /**
 	     * Checks to make sure validation layers are supported

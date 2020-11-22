@@ -147,12 +147,12 @@ namespace VG{
 
     void GraphicsInstance::pickPhysicalDevice() {
 
-        VG_CORE_INFO_NOSTRIP("Finding number of suitable GPUs with Vulkan.");
+        VG_CORE_INFO("Finding number of suitable GPUs with Vulkan.");
 
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
-        VG_CORE_INFO_NOSTRIP("Found {} GPU that supports Vulkan.", deviceCount);
+        VG_CORE_INFO_NOSTRIP("Found {} GPU that supports Vulkan. Finding which is most suitable.", deviceCount);
 
         if(deviceCount == 0){
             VG_CORE_CRITICAL_NOSTRIP("No suitable GPU for Vulkan Rendering!");
@@ -189,6 +189,47 @@ namespace VG{
             vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
             VG_CORE_INFO_NOSTRIP("Selected {} as the GPU", deviceProperties.deviceName);
         }
+
+    }
+
+    void GraphicsInstance::createLogicalDevice() {
+
+        /* Create a queue family from the required indices */
+        QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+        float queuePriority = 1.0f;
+
+        /* mention the queues we need */
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
+        queueCreateInfo.queueCount = 1;
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+
+        /* mention the features we need */
+        VkPhysicalDeviceFeatures deviceFeatures{};
+
+        /* Actually create the logical device */
+        VkDeviceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pQueueCreateInfos = &queueCreateInfo;
+        createInfo.queueCreateInfoCount = 1;
+
+        createInfo.pEnabledFeatures = &deviceFeatures;
+
+        /* Even though these are now ignored, the tutorial suggusted that I do this */
+        createInfo.enabledExtensionCount = 0;
+
+        if (enableValidationLayers) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+            createInfo.ppEnabledLayerNames = validationLayers.data();
+        } else {
+            createInfo.enabledLayerCount = 0;
+        }
+
+        VULKAN_CALL(vkCreateDevice(physicalDevice, &createInfo, nullptr, &device));
+
+        /* and lastly create the graphics queue */
+        vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 
     }
 
@@ -292,6 +333,8 @@ namespace VG{
         /* Maximum possible size of textures affects graphics quality */
         score += deviceProperties.limits.maxImageDimension2D;
 
+        VG_CORE_INFO("GPU {} has score of {}.", deviceProperties.deviceName, score);
+
         /* Application can't function without geometry shaders */
         if (!deviceFeatures.geometryShader) {
             return 0;
@@ -311,6 +354,8 @@ namespace VG{
 
     VG::GraphicsInstance::~GraphicsInstance() {
 
+        vkDestroyDevice(device, nullptr);
+
         if(enableValidationLayers){
             DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
         }
@@ -324,8 +369,11 @@ namespace VG{
         createInstance(applicationName, appVersion_major, appVersion_minor, appVersion_patch);
         setupDebugMessenger();
         pickPhysicalDevice();
+        createLogicalDevice();
 
     }
+
+
 
 
 }
