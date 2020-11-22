@@ -71,7 +71,9 @@ namespace VG {
 	class VG_API GraphicsInstance{
 	private:
 	    VkInstance instance;
-	    /**
+        VkDebugUtilsMessengerEXT debugMessenger;
+
+        /**
 	     * Creates a VkInstance
 	     * @param applicationName The Name
 	     * @param appVersion_major Patch major
@@ -80,6 +82,8 @@ namespace VG {
 	     */
 	    void createInstance(const std::string &applicationName, uint32_t appVersion_major,
                             uint32_t appVersion_minor, uint32_t appVersion_patch);
+
+	    void setupDebugMessenger();
 
 	    /**
 	     * Checks to make sure validation layers are supported
@@ -91,6 +95,20 @@ namespace VG {
 	     * @return The list of extensions.
 	     */
         static std::vector<const char*> getRequiredExtensions();
+
+        /**
+         * A function to call from the driver when an error occurs
+         * @param messageSeverity The severity of the message
+         * @param messageType The type of message
+         * @param pCallbackData The Callback data
+         * @param pUserData The user data
+         * @return Who knows
+         */
+        static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+                VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                VkDebugUtilsMessageTypeFlagsEXT messageType,
+                const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                void* pUserData);
 
 	public:
 	    GraphicsInstance() = default;

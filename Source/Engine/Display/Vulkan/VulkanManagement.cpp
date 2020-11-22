@@ -47,6 +47,25 @@ namespace VG{
     bool enableValidationLayers = true;
 #endif
 
+    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
+        auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+        if (func != nullptr) {
+            return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+        } else {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        }
+    }
+
+    void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
+
+        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+        if (func != nullptr) {
+            func(instance, debugMessenger, pAllocator);
+        }else{
+            VG_CORE_CRITICAL_NOSTRIP("DestroyDebugUtilsMessengerEXT requested but not found");
+        }
+    }
+
     void GraphicsInstance::createInstance(const std::string &applicationName, uint32_t appVersion_major,
                                           uint32_t appVersion_minor, uint32_t appVersion_patch) {
 
@@ -88,6 +107,24 @@ namespace VG{
 
         /* Create the instance */
         VULKAN_CALL(vkCreateInstance(&createInfo, nullptr, &instance));
+
+        setupDebugMessenger();
+
+    }
+
+    void GraphicsInstance::setupDebugMessenger() {
+
+        VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        createInfo.pfnUserCallback = debugCallback;
+        createInfo.pUserData = nullptr; // Optional
+
+        if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
+            VG_CORE_CRITICAL_NOSTRIP("Failed to set up debug messenger!");
+            throw std::runtime_error("failed to set up debug messenger!");
+        }
 
     }
 
@@ -131,9 +168,23 @@ namespace VG{
         return extensions;
     }
 
+    VKAPI_ATTR VkBool32 VKAPI_CALL VG::GraphicsInstance::debugCallback(
+            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+            VkDebugUtilsMessageTypeFlagsEXT messageType,
+            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+            void* pUserData) {
+
+        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+
+        return VK_FALSE;
+    }
+
 
     VG::GraphicsInstance::~GraphicsInstance() {
 
+        if(enableValidationLayers){
+            DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+        }
         vkDestroyInstance(instance, nullptr);
 
     }
@@ -144,7 +195,6 @@ namespace VG{
         createInstance(applicationName, appVersion_major, appVersion_minor, appVersion_patch);
 
     }
-
 
 
 
