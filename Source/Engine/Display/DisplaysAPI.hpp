@@ -38,11 +38,41 @@
 
 namespace VG {
 
+    /**
+     * Represents a window object
+     */
 	class VG_API Window {
 	private:
 		void* window;
 
 	public:
+	    /**
+	     * Constructs a window object
+	     * @param width The width of the window
+	     * @param height The height of the window
+	     * @param windowTitle The title of the window
+	     */
 		Window(int width, int height, const std::string& windowTitle);
+		~Window();
+
+		/**
+		 * Asks the driver if the window should close for any reason.
+		 * \note Also polls for updates
+		 * @return Whether the window should close.
+		 */
+		[[nodiscard]] bool shouldClose() const;
+
 	};
+
+	class VG_API GraphicsInstance{
+
+	private:
+	    VkInstance instance;
+
+	public:
+	    GraphicsInstance(const std::string& applicationName, uint32_t appVersion_major, uint32_t appVersion_minor, uint32_t appVersion_patch);
+	    ~GraphicsInstance();
+
+	};
+
 }

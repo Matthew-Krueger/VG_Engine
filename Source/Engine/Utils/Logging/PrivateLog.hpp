@@ -32,17 +32,8 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 ************************************************************************************/
 
-#ifndef METAHEADER_VG_ENGINE_HPP
-#define METAHEADER_VG_ENGINE_HPP
 
+#ifndef VG_ENGINE_PRIVATELOG_HPP
+#define VG_ENGINE_PRIVATELOG_HPP
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-
-#include <string>
-#include <iostream>
-#include <vector>
-
-#include "../Win32Exports.hpp"
-
-#endif
+#endif //VG_ENGINE_PRIVATELOG_HPP

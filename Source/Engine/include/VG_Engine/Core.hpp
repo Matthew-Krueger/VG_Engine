@@ -31,32 +31,30 @@
 * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE     *
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 ************************************************************************************/
+#ifndef ENGINE_HPP_VG_ENGINE
+#define ENGINE_HPP_VG_ENGINE
 
-#pragma once
+// Dependencies
+#include <string>
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
-#if defined _WIN32 || defined __CYGWIN__
-#   ifdef VG_BUILD_LIBRARY
-// Exporting...
-#       ifdef __GNUC__
-#           define VG_API __attribute__ ((dllexport))
-#       else
-#           define VG_API __declspec(dllexport) // Note: actually gcc seems to also supports this syntax.
-#       endif
-#   else
-#       ifdef __GNUC__
-#           define VG_API __attribute__ ((dllimport))
-#       else
-#           define VG_API __declspec(dllimport) // Note: actually gcc seems to also supports this syntax.
-#       endif
-#   endif
-#   define VG_API_HIDDEN
-#else
-#   if __GNUC__ >= 4
-#       define VG_API __attribute__ ((visibility ("default"))) extern
-#       define VG_API_HIDDEN  __attribute__ ((visibility ("hidden")))
-#   else
-#       define VG_API
-#       define VG_API_HIDDEN
-#       error Problem configuring
-#   endif
+// GLM
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
+
+// Exports
+#include "../../Win32Exports.hpp"
+
+// Exceptions
+#include "../../EngineExceptions.hpp"
+
+// Engine Files
+#include "../../Utils/UtilsAPI.hpp"
+#include "../../Display/DisplaysAPI.hpp"
+
 #endif

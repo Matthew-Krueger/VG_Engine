@@ -32,19 +32,4 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 ************************************************************************************/
 
-#include "DisplaysAPI.hpp"
 
-VG::Window::Window(int width, int height, const std::string& windowTitle)
-{
-
-	if (!glfwInit()) {
-		std::cerr << "Unable to init GLFW\n";
-	}
-
-	window = glfwCreateWindow(width,height, windowTitle.c_str(), nullptr, nullptr);
-
-	uint32_t extensionCount = 0;
-	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-    std::cout << extensionCount << " extensions supported\n";
-
-}

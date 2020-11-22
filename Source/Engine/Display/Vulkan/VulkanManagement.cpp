@@ -32,31 +32,39 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 ************************************************************************************/
 
-#pragma once
+#include "../DisplaysAPI.hpp"
 
-#if defined _WIN32 || defined __CYGWIN__
-#   ifdef VG_BUILD_LIBRARY
-// Exporting...
-#       ifdef __GNUC__
-#           define VG_API __attribute__ ((dllexport))
-#       else
-#           define VG_API __declspec(dllexport) // Note: actually gcc seems to also supports this syntax.
-#       endif
-#   else
-#       ifdef __GNUC__
-#           define VG_API __attribute__ ((dllimport))
-#       else
-#           define VG_API __declspec(dllimport) // Note: actually gcc seems to also supports this syntax.
-#       endif
-#   endif
-#   define VG_API_HIDDEN
-#else
-#   if __GNUC__ >= 4
-#       define VG_API __attribute__ ((visibility ("default"))) extern
-#       define VG_API_HIDDEN  __attribute__ ((visibility ("hidden")))
-#   else
-#       define VG_API
-#       define VG_API_HIDDEN
-#       error Problem configuring
-#   endif
-#endif
+namespace VG{
+    GraphicsInstance::GraphicsInstance(const std::string& applicationName, uint32_t appVersion_major, uint32_t appVersion_minor, uint32_t appVersion_patch){
+
+        /* Create information about our application */
+        VkApplicationInfo appInfo{};
+        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        appInfo.pApplicationName = applicationName.c_str();
+        appInfo.applicationVersion = VK_MAKE_VERSION(appVersion_major, appVersion_minor, appVersion_patch);
+        appInfo.pEngineName = VG_ENGINE_NAME;
+        appInfo.engineVersion = VK_MAKE_VERSION(VG_VERSION_MAJOR,VG_VERSION_MINOR,VG_VERSION_PATCH);
+        appInfo.apiVersion = VK_API_VERSION_1_0;
+
+        /* Create information about our info (why, I don't know. They told me to */
+        VkInstanceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        createInfo.pApplicationInfo = &appInfo;
+
+        /* Get the window layer extensions from GLFW */
+        uint32_t glfwExtensionCount = 0;
+        const char** glfwExtensions;
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+        /* set the create info to include Extensions */
+        createInfo.enabledExtensionCount = glfwExtensionCount;
+        createInfo.ppEnabledExtensionNames = glfwExtensions;
+
+        /* Disbale all validation layers */
+        createInfo.enabledLayerCount = 0;
+
+        VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
+
+
+    }
+}

@@ -36,7 +36,7 @@ project(VG_Engine C CXX)
 
 set(VG_VERSION_MAJOR "0")
 set(VG_VERSION_MINOR "0")
-set(VG_VERSION_PATCH "0")
+set(VG_VERSION_PATCH "1")
 set(VG_VERSION_TWEAK "1")
 set(VG_VERSION "${VG_VERSION_MAJOR}.${VG_VERSION_MINOR}")
 set(VG_VERSION_FULL "${VG_VERSION}.${VG_VERSION_PATCH}-${VG_VERSION_TWEAK}")
@@ -113,17 +113,35 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)
 endif()
 
+# GLFW
 add_subdirectory(Dependencies/GLFW)
 include_directories(Dependencies/GLFW/include)
 
+# STB image
 add_subdirectory(Dependencies/STB)
 include_directories(Dependencies/STB/include)
+
+# Catch2
+include_directories(Dependencies/Catch2/include)
+
+# GLM
+include_directories(Dependencies/GLM)
+
+# spdlog
+add_subdirectory(Dependencies/spdlog)
+include_directories(Dependencies/spdlog/include)
+set_property(TARGET spdlog PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 ##############################
 #       Build Engine DLL     #
 ##############################
 add_subdirectory("Source/Engine")
 include_directories("Source/Engine/include")
+
+##############################
+#         Build Tests        #
+##############################
+add_subdirectory(Source/EngineTests)
 
 ##############################
 #      Build Application     #

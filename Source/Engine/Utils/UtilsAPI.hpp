@@ -31,18 +31,29 @@
 * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE     *
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 ************************************************************************************/
-#ifndef ENGINE_HPP_VG_ENGINE
-#define ENGINE_HPP_VG_ENGINE
 
-// Dependencies
-#include <string>
-#include "../../MetaHeader.hpp"
+#ifndef VG_ENGINE_UTILSAPI_HPP
+#define VG_ENGINE_UTILSAPI_HPP
 
-// Exports
-#include "../../Win32Exports.hpp"
+namespace VG{
 
+    /**
+     * Initializes the engine. Must be called before any
+     * other engine code
+     */
+    VG_API void startEngine();
 
-// Engine Files
-#include "../../Display/DisplaysAPI.hpp"
+    /**
+     * Stops the engine and cleans up.
+     */
+    VG_API void stopEngine();
 
-#endif
+    /**
+     * Used in the tester to verify dll linking
+     * @return Always returns true.
+     */
+    VG_API bool linkTest();
+
+}
+
+#endif //VG_ENGINE_UTILSAPI_HPP

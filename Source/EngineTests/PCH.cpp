@@ -32,31 +32,5 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 ************************************************************************************/
 
-#pragma once
 
-#if defined _WIN32 || defined __CYGWIN__
-#   ifdef VG_BUILD_LIBRARY
-// Exporting...
-#       ifdef __GNUC__
-#           define VG_API __attribute__ ((dllexport))
-#       else
-#           define VG_API __declspec(dllexport) // Note: actually gcc seems to also supports this syntax.
-#       endif
-#   else
-#       ifdef __GNUC__
-#           define VG_API __attribute__ ((dllimport))
-#       else
-#           define VG_API __declspec(dllimport) // Note: actually gcc seems to also supports this syntax.
-#       endif
-#   endif
-#   define VG_API_HIDDEN
-#else
-#   if __GNUC__ >= 4
-#       define VG_API __attribute__ ((visibility ("default"))) extern
-#       define VG_API_HIDDEN  __attribute__ ((visibility ("hidden")))
-#   else
-#       define VG_API
-#       define VG_API_HIDDEN
-#       error Problem configuring
-#   endif
-#endif
+#include "PCH.hpp"

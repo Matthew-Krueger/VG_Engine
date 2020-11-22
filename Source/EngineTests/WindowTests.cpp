@@ -32,31 +32,21 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 ************************************************************************************/
 
-#pragma once
+#include "../Engine/Utils/PCH.hpp"
 
-#if defined _WIN32 || defined __CYGWIN__
-#   ifdef VG_BUILD_LIBRARY
-// Exporting...
-#       ifdef __GNUC__
-#           define VG_API __attribute__ ((dllexport))
-#       else
-#           define VG_API __declspec(dllexport) // Note: actually gcc seems to also supports this syntax.
-#       endif
-#   else
-#       ifdef __GNUC__
-#           define VG_API __attribute__ ((dllimport))
-#       else
-#           define VG_API __declspec(dllimport) // Note: actually gcc seems to also supports this syntax.
-#       endif
-#   endif
-#   define VG_API_HIDDEN
-#else
-#   if __GNUC__ >= 4
-#       define VG_API __attribute__ ((visibility ("default"))) extern
-#       define VG_API_HIDDEN  __attribute__ ((visibility ("hidden")))
-#   else
-#       define VG_API
-#       define VG_API_HIDDEN
-#       error Problem configuring
-#   endif
-#endif
+TEST_CASE("Can I create a window"){
+
+    REQUIRE_NOTHROW(VG_Tests::window = new VG::Window(1280,720,"Test if can create window"));
+    REQUIRE_NOTHROW(delete VG_Tests::window);
+
+    VG::stopEngine();
+    VG_Tests::window = nullptr;
+    REQUIRE_THROWS(VG_Tests::window = new VG::Window(1280,720,"Make sure I can't open this"));
+    REQUIRE_THROWS_AS(VG_Tests::window = new VG::Window(1280,720,"Make sure I can't open this"), VG::engineHasNotStartedException);
+    delete VG_Tests::window;
+
+    VG::startEngine();
+    VG_Tests::initWindow();
+
+}
+
