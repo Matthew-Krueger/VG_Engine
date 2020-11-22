@@ -81,14 +81,10 @@ namespace VG{
             createInfo.enabledLayerCount = 0;
         }
 
-        /* let GLFW handle extensions */
-        uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions;
-
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-        createInfo.enabledExtensionCount = glfwExtensionCount;
-        createInfo.ppEnabledExtensionNames = glfwExtensions;
+        /* handle extensions */
+        auto extensions = getRequiredExtensions();
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+        createInfo.ppEnabledExtensionNames = extensions.data();
 
         /* Create the instance */
         VULKAN_CALL(vkCreateInstance(&createInfo, nullptr, &instance));
@@ -121,6 +117,20 @@ namespace VG{
 
     }
 
+    std::vector<const char *> GraphicsInstance::getRequiredExtensions() {
+        uint32_t glfwExtensionCount = 0;
+        const char** glfwExtensions;
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+        if (enableValidationLayers) {
+            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        }
+
+        return extensions;
+    }
+
 
     VG::GraphicsInstance::~GraphicsInstance() {
 
@@ -134,6 +144,7 @@ namespace VG{
         createInstance(applicationName, appVersion_major, appVersion_minor, appVersion_patch);
 
     }
+
 
 
 

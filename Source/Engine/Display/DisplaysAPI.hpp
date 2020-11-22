@@ -71,9 +71,26 @@ namespace VG {
 	class VG_API GraphicsInstance{
 	private:
 	    VkInstance instance;
+	    /**
+	     * Creates a VkInstance
+	     * @param applicationName The Name
+	     * @param appVersion_major Patch major
+	     * @param appVersion_minor minor
+	     * @param appVersion_patch patch
+	     */
 	    void createInstance(const std::string &applicationName, uint32_t appVersion_major,
                             uint32_t appVersion_minor, uint32_t appVersion_patch);
-        static bool checkValidationLayerSupport();
+
+	    /**
+	     * Checks to make sure validation layers are supported
+	     * @return Whether or not they are
+	     */
+	    static bool checkValidationLayerSupport();
+	    /**
+	     * Gets the extensions that are required for vulkan
+	     * @return The list of extensions.
+	     */
+        static std::vector<const char*> getRequiredExtensions();
 
 	public:
 	    GraphicsInstance() = default;
