@@ -83,7 +83,12 @@ namespace VG {
 	    void createInstance(const std::string &applicationName, uint32_t appVersion_major,
                             uint32_t appVersion_minor, uint32_t appVersion_patch);
 
+	    /**
+	     * Sets up the debug messenger
+	     */
 	    void setupDebugMessenger();
+
+	    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 
 	    /**
 	     * Checks to make sure validation layers are supported
