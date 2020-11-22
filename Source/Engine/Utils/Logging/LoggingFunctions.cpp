@@ -32,3 +32,48 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 ************************************************************************************/
 
+#include "PublicLog.hpp"
+#include "PrivateLog.hpp"
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/sinks/basic_file_sink.h>
+
+namespace VG{
+
+    std::shared_ptr<spdlog::logger> Log::coreLogger;
+    std::shared_ptr<spdlog::logger> Log::clientLogger;
+
+    void Log::Init(const std::string& filePath) {
+
+        //spdlog::set_pattern("%^[%T] %n: %v%$");
+        //coreLogger = spdlog::stdout_color_mt("f");
+
+
+        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filePath);
+        file_sink->set_level(spdlog::level::trace);
+        file_sink->set_pattern("%^[%T] %n: %v%$");
+        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        console_sink->set_level(spdlog::level::trace);
+        console_sink->set_pattern("%^[%T] %n: %v%$");
+
+        coreLogger = std::make_shared<spdlog::logger>(VG_ENGINE_NAME, spdlog::sinks_init_list{console_sink, file_sink});
+        clientLogger = std::make_shared<spdlog::logger>("Client", spdlog::sinks_init_list{console_sink, file_sink});
+
+        /*{
+            auto core_console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+            core_console_sink->set_level(spdlog::level::trace);
+            core_console_sink->set_pattern("%^[%T] %n: %v%$");
+
+            coreLogger = std::make_shared<spdlog::logger>(VG_ENGINE_NAME, spdlog::sinks_init_list{core_console_sink, file_sink});
+        }
+
+        {
+            auto client_console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+            client_console_sink->set_level(spdlog::level::trace);
+            client_console_sink->set_pattern("%^[%T] %n: %v%$");
+
+            clientLogger = std::make_shared<spdlog::logger>("Client", spdlog::sinks_init_list{client_console_sink, file_sink});
+        }*/
+
+    }
+
+}

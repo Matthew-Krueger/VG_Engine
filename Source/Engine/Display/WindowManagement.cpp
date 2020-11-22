@@ -39,6 +39,7 @@ VG::Window::Window(int width, int height, const std::string& windowTitle)
 {
 
     if(!VG::hasStarted){
+        VG_CORE_ERROR_NOSTRIP("The engine has not yet started.");
         throw VG::engineHasNotStartedException();
     }
 
@@ -48,7 +49,7 @@ VG::Window::Window(int width, int height, const std::string& windowTitle)
 
 	uint32_t extensionCount = 0;
 	vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-    std::cout << extensionCount << " extensions supported\n";
+    VG_CORE_INFO("{0} Vulkan extensions supported", extensionCount);
 
 }
 

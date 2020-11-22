@@ -47,6 +47,9 @@
 #include <glm/vec3.hpp>
 #include <glm/vec2.hpp>
 
+// logging
+#include "../../Utils/Logging/PublicLog.hpp"
+
 // Exports
 #include "../../Win32Exports.hpp"
 

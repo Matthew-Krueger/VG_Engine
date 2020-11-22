@@ -41,7 +41,7 @@ namespace VG{
      * Initializes the engine. Must be called before any
      * other engine code
      */
-    VG_API void startEngine();
+    VG_API void startEngine(const std::string& logFileLocation = "log.txt");
 
     /**
      * Stops the engine and cleans up.

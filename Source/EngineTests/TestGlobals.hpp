@@ -36,7 +36,7 @@
 #ifndef VG_ENGINE_TESTGLOBALS_HPP
 #define VG_ENGINE_TESTGLOBALS_HPP
 
-#include "VG_Engine/Core.hpp"
+#include "../Engine/include/VG_Engine/Core.hpp"
 
 namespace VG_Tests{
 

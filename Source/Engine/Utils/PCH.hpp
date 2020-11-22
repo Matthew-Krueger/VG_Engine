@@ -50,9 +50,14 @@
 #include <iostream>
 #include <vector>
 
+// logging
+#include "Logging/PrivateLog.hpp"
+
 #include "../Win32Exports.hpp"
 #include "../EngineGlobals.hpp"
 #include "../EngineExceptions.hpp"
+
+#include "VulkanAsserts.hpp"
 
 
 #endif //VG_ENGINE_PCH_HPP

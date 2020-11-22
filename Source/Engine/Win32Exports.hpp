@@ -32,7 +32,8 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 ************************************************************************************/
 
-#pragma once
+#ifndef WIN32EXPORTS_VG_ENGINE
+#define WIN32EXPORTS_VG_ENGINE
 
 #if defined _WIN32 || defined __CYGWIN__
 #   ifdef VG_BUILD_LIBRARY
@@ -59,4 +60,6 @@
 #       define VG_API_HIDDEN
 #       error Problem configuring
 #   endif
+#endif
+
 #endif

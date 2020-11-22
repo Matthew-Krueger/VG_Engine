@@ -1,6 +1,6 @@
 set(MODULE_NAME ${PROJECT_NAME})
 
-add_library(${MODULE_NAME} SHARED  "Win32Exports.hpp" "include/VG_Engine/Core.hpp" "Display/WindowManagement.cpp" "Display/DisplaysAPI.hpp" Utils/UtilsAPI.hpp Utils/InitScripts.cpp Utils/PCH.hpp Utils/PCH.cpp Utils/EngineManagement.cpp ../EngineTests/TestMain.cpp ../EngineTests/PCH.cpp ../EngineTests/PCH.hpp EngineGlobals.hpp EngineExceptions.hpp Display/Vulkan/VulkanManagement.cpp Utils/Logging/PublicLog.hpp Utils/Logging/PrivateLog.hpp Utils/Logging/LoggingFunctions.cpp)
+add_library(${MODULE_NAME} SHARED  "Win32Exports.hpp" "include/VG_Engine/Core.hpp" "Display/WindowManagement.cpp" "Display/DisplaysAPI.hpp" Utils/UtilsAPI.hpp Utils/InitScripts.cpp Utils/PCH.hpp Utils/PCH.cpp Utils/EngineManagement.cpp ../EngineTests/TestMain.cpp ../EngineTests/PCH.cpp ../EngineTests/PCH.hpp EngineGlobals.hpp EngineExceptions.hpp Display/Vulkan/VulkanManagement.cpp Utils/Logging/PublicLog.hpp Utils/Logging/PrivateLog.hpp Utils/Logging/LoggingFunctions.cpp Utils/VulkanAsserts.hpp)
 add_dependencies(${MODULE_NAME} glfw STB_LIB spdlog)
 target_link_libraries(${MODULE_NAME} glfw STB_LIB ${VULKAN_LIB_LIST} spdlog)
 

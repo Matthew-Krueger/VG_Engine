@@ -32,8 +32,54 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 ************************************************************************************/
 
+/* This file is also used for private log, but I don't care, so, it goes here. */
+
 
 #ifndef VG_ENGINE_PUBLICLOG_HPP
 #define VG_ENGINE_PUBLICLOG_HPP
+
+#include <spdlog/spdlog.h>
+#include "../../Win32Exports.hpp"
+
+namespace VG{
+
+
+    class VG_API Log{
+    private:
+        static std::shared_ptr<spdlog::logger> coreLogger;
+        static std::shared_ptr<spdlog::logger> clientLogger;
+
+    public:
+        static void Init(const std::string& filePath);
+
+        inline static std::shared_ptr<spdlog::logger>& getCoreLogger(){ return coreLogger; }
+        inline static std::shared_ptr<spdlog::logger>& getClientLogger(){ return clientLogger; }
+
+    };
+
+}
+
+// client log macros
+#ifdef NDEBUG
+#   define VG_TRACE
+#   define VG_INFO
+#   define VG_WARN
+#   define VG_ERROR
+#   define VG_CRITICAL
+#else
+#   define VG_TRACE(...)       ::VG::Log::getClientLogger()->trace(__VA_ARGS__);
+#   define VG_INFO(...)        ::VG::Log::getClientLogger()->info(__VA_ARGS__);
+#   define VG_WARN(...)        ::VG::Log::getClientLogger()->warn(__VA_ARGS__);
+#   define VG_ERROR(...)       ::VG::Log::getClientLogger()->error(__VA_ARGS__);
+#   define VG_CRITICAL(...)       ::VG::Log::getClientLogger()->critical(__VA_ARGS__);
+#endif
+
+#define VG_TRACE_NOSTRIP(...)       ::VG::Log::getClientLogger()->trace(__VA_ARGS__);
+#define VG_INFO_NOSTRIP(...)        ::VG::Log::getClientLogger()->info(__VA_ARGS__);
+#define VG_WARN_NOSTRIP(...)        ::VG::Log::getClientLogger()->warn(__VA_ARGS__);
+#define VG_ERROR_NOSTRIP(...)       ::VG::Log::getClientLogger()->error(__VA_ARGS__);
+#define VG_FATAL_CRITICAL(...)       ::VG::Log::getClientLogger()->critical(__VA_ARGS__);
+
+
 
 #endif //VG_ENGINE_PUBLICLOG_HPP

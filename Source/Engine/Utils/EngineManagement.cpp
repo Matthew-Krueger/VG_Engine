@@ -1,26 +1,39 @@
 
 #include "UtilsAPI.hpp"
+#include "../Display/DisplaysAPI.hpp"
 
-bool VG::hasStarted = false;
+namespace VG{
 
-void VG::startEngine(){
+    bool hasStarted = false;
 
-    if (!glfwInit()) {
-        std::cerr << "Unable to init GLFW\n";
+
+    void startEngine(const std::string& logFileLocation){
+
+        VG::Log::Init(logFileLocation);
+
+        VG_CORE_TRACE("Starting windowing system.");
+        if (!glfwInit()) {
+            VG_CORE_CRITICAL_NOSTRIP("Unable to init GLFW");
+        }
+
+
+        VG::hasStarted = true;
+
     }
 
-    VG::hasStarted = true;
+    void stopEngine(){
 
-}
+        glfwTerminate();
 
-void VG::stopEngine(){
+        VG::hasStarted = false;
 
-    glfwTerminate();
+        fflush(stdout);
 
-    VG::hasStarted = false;
+    }
 
-}
+    bool linkTest() {
+        return true;
+    }
 
-bool VG::linkTest() {
-    return true;
+
 }

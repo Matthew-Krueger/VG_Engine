@@ -32,32 +32,20 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.              *
 ************************************************************************************/
 
+#ifndef VG_ENGINE_VULKANASSERTS_HPP
+#define VG_ENGINE_VULKANASSERTS_HPP
 
-#ifndef VG_ENGINE_PRIVATELOG_HPP
-#define VG_ENGINE_PRIVATELOG_HPP
-
-#include "PublicLog.hpp"
-
-// core log macros
 #ifdef NDEBUG
-#   define VG_CORE_TRACE
-#   define VG_CORE_INFO
-#   define VG_CORE_WARN
-#   define VG_CORE_ERROR
-#   define VG_CORE_CRITICAL
+#define VULKAN_CALL
 #else
-#   define VG_CORE_TRACE(...)  ::VG::Log::getCoreLogger()->trace(__VA_ARGS__);
-#   define VG_CORE_INFO(...)   ::VG::Log::getCoreLogger()->info(__VA_ARGS__);
-#   define VG_CORE_WARN(...)   ::VG::Log::getCoreLogger()->warn(__VA_ARGS__);
-#   define VG_CORE_ERROR(...)  ::VG::Log::getCoreLogger()->error(__VA_ARGS__);
-#   define VG_CORE_CRITICAL(...)  ::VG::Log::getCoreLogger()->critical(__VA_ARGS__);
+#define VULKAN_CALL(x) {                                                                    \
+    VkResult res = x;                                                                       \
+    if(res != VK_SUCCESS){                                                                  \
+        VG_CORE_CRITICAL("Failed to call vulkan function x. Error {}", res);                \
+        (void(0));                                                                          \
+    }                                                                                       \
+}
+
 #endif
-#define VG_CORE_TRACE_NOSTRIP(...)  ::VG::Log::getCoreLogger()->trace(__VA_ARGS__);
-#define VG_CORE_INFO_NOSTRIP(...)   ::VG::Log::getCoreLogger()->info(__VA_ARGS__);
-#define VG_CORE_WARN_NOSTRIP(...)   ::VG::Log::getCoreLogger()->warn(__VA_ARGS__);
-#define VG_CORE_ERROR_NOSTRIP(...)  ::VG::Log::getCoreLogger()->error(__VA_ARGS__);
-#define VG_CORE_CRITICAL_NOSTRIP(...)  ::VG::Log::getCoreLogger()->critical(__VA_ARGS__);
 
-
-
-#endif //VG_ENGINE_PRIVATELOG_HPP
+#endif //VG_ENGINE_VULKANASSERTS_HPP
