@@ -44,11 +44,27 @@ namespace VG{
             "VK_LAYER_KHRONOS_validation"
     };
 
+    std::vector<const char*> deviceExtensions = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
+
 #ifdef NDEBUG
     bool enableValidationLayers = false;
 #else
     bool enableValidationLayers = true;
 #endif
+
+    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats) {
+
+        for (const auto& availableFormat : availableFormats) {
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+                return availableFormat;
+            }
+        }
+
+        return availableFormats[0];
+
+    }
 
     bool VG::QueueFamilyIndices::isComplete() const {
         return graphicsFamily.has_value() && presentFamily.has_value();
@@ -170,8 +186,10 @@ namespace VG{
         std::multimap<int, VkPhysicalDevice> candidates;
 
         for (const auto& device : devices) {
-            int score = rateDeviceSuitability(device);
-            candidates.insert(std::make_pair(score,device));
+            if(isDeviceSuitable(device)){
+                int score = rateDeviceSuitability(device);
+                candidates.insert(std::make_pair(score,device));
+            }
         }
 
         /* Find most suitable GPU */
@@ -227,6 +245,10 @@ namespace VG{
 
         createInfo.pEnabledFeatures = &deviceFeatures;
 
+        /* Add information about the extensions */
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+
         /* Even though these are now ignored, the tutorial suggusted that I do this */
         createInfo.enabledExtensionCount = 0;
 
@@ -256,7 +278,7 @@ namespace VG{
 
     }
 
-    bool GraphicsInstance::checkValidationLayerSupport() {
+    bool checkValidationLayerSupport() {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -282,7 +304,7 @@ namespace VG{
 
     }
 
-    std::vector<const char *> GraphicsInstance::getRequiredExtensions() {
+    std::vector<const char *> getRequiredExtensions() {
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -343,7 +365,7 @@ namespace VG{
         return indices;
     }
 
-    int GraphicsInstance::rateDeviceSuitability(VkPhysicalDevice device) {
+    int rateDeviceSuitability(VkPhysicalDevice device) {
 
         /* Ask driver for properties */
         VkPhysicalDeviceProperties deviceProperties;
@@ -379,7 +401,37 @@ namespace VG{
             VG_CORE_CRITICAL_NOSTRIP("Could not find queues");
             return false;
         }
-        return true;
+
+        bool extensionsSupported = checkDeviceExtensionSupport(device);
+        bool swapChainAdequate = false;
+
+        if(!extensionsSupported){
+            VG_CORE_CRITICAL_NOSTRIP("Device does not have the required extensions.");
+            throw std::runtime_error("Deice does not support required extensions");
+        }else{
+            SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+            swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        }
+
+        return swapChainAdequate;
+    }
+
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
+
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+        std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+        for (const auto& extension : availableExtensions) {
+            requiredExtensions.erase(extension.extensionName);
+        }
+
+        return requiredExtensions.empty();
+
     }
 
     VG::GraphicsInstance::~GraphicsInstance() {
@@ -407,6 +459,29 @@ namespace VG{
 
     }
 
+    SwapChainSupportDetails GraphicsInstance::querySwapChainSupport(VkPhysicalDevice device) {
 
+        SwapChainSupportDetails details;
+
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+
+        if(formatCount != 0){
+            details.formats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+        }
+
+        uint32_t presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+
+        if (presentModeCount != 0) {
+            details.presentModes.resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+        }
+
+        return details;
+
+    }
 
 }

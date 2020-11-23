@@ -42,12 +42,19 @@ namespace VG {
     extern bool enableValidationLayers;
 
     extern std::vector<const char*> validationLayers;
+    extern std::vector<const char*> deviceExtensions;
 
     struct QueueFamilyIndices{
         std::optional<uint32_t> graphicsFamily;
         std::optional<uint32_t> presentFamily;
 
         bool isComplete() const;
+    };
+
+    struct SwapChainSupportDetails {
+        VkSurfaceCapabilitiesKHR capabilities;
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
     };
 
     /**
@@ -82,7 +89,35 @@ namespace VG {
 
 	};
 
-	class VG_API GraphicsInstance{
+    /**
+     * Rates the suitability of any device
+     * @param device The device to check
+     * @return It's suitability score
+     */
+    int rateDeviceSuitability(VkPhysicalDevice device);
+
+    /**
+     * Checks to make sure validation layers are supported
+     * @return Whether or not they are
+     */
+    bool checkValidationLayerSupport();
+
+    /**
+     * Gets the extensions that are required for vulkan
+     * @return The list of extensions.
+     */
+    std::vector<const char*> getRequiredExtensions();
+
+    /**
+     * ensures that the required extensions are supported
+     * @param device The device to check
+     * @return Whether the device supports it
+     */
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+
+    VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+
+    class VG_API GraphicsInstance{
 	private:
 	    VkInstance instance;
         VkDebugUtilsMessengerEXT debugMessenger;
@@ -129,17 +164,6 @@ namespace VG {
 	     */
 	    void createSurface(Window* window);
 
-	    /**
-	     * Checks to make sure validation layers are supported
-	     * @return Whether or not they are
-	     */
-	    static bool checkValidationLayerSupport();
-	    /**
-	     * Gets the extensions that are required for vulkan
-	     * @return The list of extensions.
-	     */
-        static std::vector<const char*> getRequiredExtensions();
-
         /**
          * A function to call from the driver when an error occurs
          * @param messageSeverity The severity of the message
@@ -154,9 +178,21 @@ namespace VG {
                 const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                 void* pUserData);
 
-        static int rateDeviceSuitability(VkPhysicalDevice device);
+        /**
+         * Finds the id of the queues
+         * @param device The device to look at
+         * @return The QueueFamilyIndices that tells us where it is at
+         */
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+
+        /**
+         * Asks the GPU if the device is suitable at all
+         * @param device The device to find if it is suitable
+         * @return Whether it is suitable
+         */
         bool isDeviceSuitable(VkPhysicalDevice device);
+
+        SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 
     public:
 	    GraphicsInstance() = default;
